@@ -3,6 +3,8 @@ const url = require("url")
 const request = require("request")
 const validUrl = require("valid-url")
 
+const port = process.env.PORT || 3000;
+
 const onRequest = (req, res) => {
   const parsedUrl = url.parse(req.url, true)
   const parsedQuery = parsedUrl.query
@@ -20,4 +22,5 @@ const onRequest = (req, res) => {
   }
 }
 
-http.createServer(onRequest).listen(3000)
+http.createServer(onRequest).listen(port)
+console.log(`Your own personal proxy is running at port ${port}`);
