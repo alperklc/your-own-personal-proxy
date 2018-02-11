@@ -1,0 +1,26 @@
+{
+  "name": "your-own-personal-proxy",
+  "version": "1.0.0",
+  "description": "Bypass internet filtering by building your own tiny proxy server.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alperklc/your-own-personal-proxy.git"
+  },
+  "keywords": [
+    "proxy"
+  ],
+  "author": "Alper K.",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alperklc/your-own-personal-proxy/issues"
+  },
+  "homepage": "https://github.com/alperklc/your-own-personal-proxy#readme",
+  "dependencies": {
+    "request": "^2.83.0",
+    "valid-url": "^1.0.9"
+  }
+}
