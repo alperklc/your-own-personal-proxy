@@ -22,6 +22,7 @@
   "homepage": "https://github.com/alperklc/your-own-personal-proxy#readme",
   "dependencies": {
     "request": "^2.83.0",
-    "valid-url": "^1.0.9"
+    "valid-url": "^1.0.9",
+    "winston": "^3.0.0-rc1"
   }
 }
