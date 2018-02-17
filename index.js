@@ -15,7 +15,7 @@ const logger = createLogger({
   ]
 })
 
-const replaceLinks = (data, rootUrl) => data.toString().replace(/href="/, `href="/?url=${rootUrl}`)
+const replaceLinks = (data, rootUrl) => data.toString().replace(/href="/g, `href="/?url=${rootUrl}`)
 
 const onRequest = (req, res) => {
   const parsedUrl = url.parse(req.url, true)
