@@ -5,6 +5,8 @@ const validUrl = require("valid-url")
 
 const port = process.env.PORT || 3000;
 
+const replaceLinks = (data, rootUrl) => data.toString().replace(/href="/, `href="/?url=${rootUrl}`)
+
 const onRequest = (req, res) => {
   const parsedUrl = url.parse(req.url, true)
   const parsedQuery = parsedUrl.query
@@ -13,9 +15,11 @@ const onRequest = (req, res) => {
 
   if (parsedQuery.url) {
     request({ url: parsedQuery.url })
-      .on("data", chunk => data += chunk)
+      .on("data", chunk => {
+        data += replaceLinks(chunk, parsedQuery.url)
+      })
       .on("end", () => res.end(data))
-      .on("error", e => res.end(e))
+      .on("error", e => res.end(e.toString()))
   }
   else {
     res.end("no url found")
