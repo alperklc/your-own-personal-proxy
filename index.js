@@ -2,9 +2,11 @@ const http = require("http")
 const url = require("url")
 const request = require("request")
 const validUrl = require("valid-url")
+const { JSDOM } = require("jsdom")
+
 const { createLogger, transports } = require("winston")
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000
 
 const logger = createLogger({
   transports: [
@@ -15,11 +17,29 @@ const logger = createLogger({
   ]
 })
 
-const replaceLinks = (data, rootUrl) => data.toString().replace(/href="/g, `href="/?url=${rootUrl}`)
+const replaceLinks = (page, rootUrl) => {
+  const pageDOM = new JSDOM(page)
+  const links = pageDOM.window.document.body.querySelectorAll('a')
+
+  links.forEach(link => {
+    const isRelativeLink = link.href.charAt(0) === "/"
+    link.href = isRelativeLink ? `/?url=${rootUrl}${link.href}` : `/?url=${link.href}`
+  })
+
+  return pageDOM.serialize()
+}
+
+const getOriginFromParsedUrl = (parsedUrl) => {
+  if (parsedUrl) {
+    return new url.URL(parsedUrl).origin
+  }
+  return ''
+}
 
 const onRequest = (req, res) => {
   const parsedUrl = url.parse(req.url, true)
   const parsedQuery = parsedUrl.query
+  const parsedOrigin = getOriginFromParsedUrl(parsedQuery.url)
 
   let data = ""
 
@@ -30,10 +50,11 @@ const onRequest = (req, res) => {
     })
 
     request({ url: parsedQuery.url })
-      .on("data", chunk => {
-        data += replaceLinks(chunk, parsedQuery.url)
+      .on("data", chunk => data += chunk)
+      .on("end", () => {
+        const page = replaceLinks(data, parsedOrigin)
+        res.end(page)
       })
-      .on("end", () => res.end(data))
       .on("error", e => res.end(e.toString()))
   }
   else {
@@ -42,4 +63,4 @@ const onRequest = (req, res) => {
 }
 
 http.createServer(onRequest).listen(port)
-console.log(`Your own personal proxy is running at port ${port}`);
+console.log(`Your own personal proxy is running at port ${port}`)
