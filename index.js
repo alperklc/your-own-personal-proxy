@@ -1,10 +1,9 @@
-const http = require("http")
-const url = require("url")
-const request = require("request")
-const validUrl = require("valid-url")
-const { JSDOM } = require("jsdom")
+const http = require('http')
+const url = require('url')
+const request = require('request')
+const { JSDOM } = require('jsdom')
 
-const { createLogger, transports } = require("winston")
+const { createLogger, transports } = require('winston')
 
 const port = process.env.PORT || 3000
 
@@ -22,7 +21,7 @@ const replaceLinks = (page, rootUrl) => {
   const links = pageDOM.window.document.body.querySelectorAll('a')
 
   links.forEach(link => {
-    const isRelativeLink = link.href.charAt(0) === "/"
+    const isRelativeLink = link.href.charAt(0) === '/'
     link.href = isRelativeLink ? `/?url=${rootUrl}${link.href}` : `/?url=${link.href}`
   })
 
@@ -41,7 +40,7 @@ const onRequest = (req, res) => {
   const parsedQuery = parsedUrl.query
   const parsedOrigin = getOriginFromParsedUrl(parsedQuery.url)
 
-  let data = ""
+  let data = ''
 
   if (parsedQuery.url) {
     logger.log({
@@ -50,15 +49,16 @@ const onRequest = (req, res) => {
     })
 
     request({ url: parsedQuery.url })
-      .on("data", chunk => data += chunk)
-      .on("end", () => {
+      .on('data', chunk => {
+        data += chunk
+      })
+      .on('end', () => {
         const page = replaceLinks(data, parsedOrigin)
         res.end(page)
       })
-      .on("error", e => res.end(e.toString()))
-  }
-  else {
-    res.end("no url found")
+      .on('error', e => res.end(e.toString()))
+  } else {
+    res.end('no url found')
   }
 }
 
