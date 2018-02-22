@@ -5,27 +5,44 @@ const { JSDOM } = require('jsdom')
 
 const { createLogger, transports } = require('winston')
 
+const { loadIndexPage, loadTopBannerTemplate } = require('./templateLoader')
+
 const port = process.env.PORT || 3000
 
 const logger = createLogger({
   transports: [
     // write all logs error (and below) to `error.log`.
-    new transports.File({ filename: 'error.log', level: 'error' }),
+    new transports.File({
+      filename: 'error.log',
+      level: 'error'
+    }),
     // write to all logs with level `info` and below to `info.log`
-    new transports.File({ filename: 'info.log', level: 'info' })
+    new transports.File({
+      filename: 'info.log',
+      level: 'info'
+    })
   ]
 })
 
-const replaceLinks = (page, rootUrl) => {
-  const pageDOM = new JSDOM(page)
-  const links = pageDOM.window.document.body.querySelectorAll('a')
-
+const replaceLinks = (links, rootUrl) => {
   links.forEach(link => {
     const isRelativeLink = link.href.charAt(0) === '/'
     link.href = isRelativeLink ? `/?url=${rootUrl}${link.href}` : `/?url=${link.href}`
   })
 
-  return pageDOM.serialize()
+  return links
+}
+
+const addTopBanner = (document, topBannerTemplate) => {
+  const topBannerEl = document.createElement('div')
+  topBannerEl.innerHTML = topBannerTemplate
+  topBannerEl.style.top = 0
+  topBannerEl.style.position = 'absolute'
+
+  document.body.appendChild(topBannerEl)
+  document.body.style.marginTop = '54px'
+
+  return document
 }
 
 const getOriginFromParsedUrl = (parsedUrl) => {
@@ -48,17 +65,35 @@ const onRequest = (req, res) => {
       message: `${new Date()} - ${req.connection.remoteAddress} - ${parsedQuery.url}`
     })
 
-    request({ url: parsedQuery.url })
+    request({
+      url: parsedQuery.url
+    })
       .on('data', chunk => {
         data += chunk
       })
       .on('end', () => {
-        const page = replaceLinks(data, parsedOrigin)
-        res.end(page)
+        const pageDOM = new JSDOM(data)
+        const bodyEl = pageDOM.window.document.body
+
+        replaceLinks(bodyEl.querySelectorAll('a'), parsedOrigin)
+
+        loadTopBannerTemplate.then((template) => {
+          addTopBanner(pageDOM.window.document, template)
+          res.end(pageDOM.serialize())
+        })
       })
-      .on('error', e => res.end(e.toString()))
+      .on('error', e => {
+        logger.log({
+          level: 'error',
+          message: `${new Date()} - ${req.connection.remoteAddress} - ${parsedQuery.url} - ${e.toString()}`
+        })
+        res.end(e.toString())
+      })
   } else {
-    res.end('no url found')
+    loadIndexPage.then((data) => {
+      res.writeHead(200, { 'Content-Type': 'text/html' })
+      res.end(data, 'utf-8')
+    })
   }
 }
 

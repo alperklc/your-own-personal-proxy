@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>your-own-personal-proxy</title>
+  <meta name="description" content="Bypass internet filtering by building your own tiny proxy server.">
+
+  <style lang="css">
+    .container {
+      text-align: center;
+      margin-top: 160px;
+    }
+    .container h1 {
+      color: #333;
+      font-size: 4em;
+    }
+    .container h6 {
+      margin-top: -32px;
+      font-size: 1em;
+    }
+    .container footer {
+      margin: 1.6rem 0;
+    }
+  </style>
+
+</head>
+
+<body>
+  <div class="container">
+    <h1>your-own-personal-proxy</h1>
+    <h6>Bypass internet filtering by building your own tiny proxy server.</h6>
+    <div class="search-bar">
+      <input type="text" id="url" onkeydown="onKeydown(event)" value="http://"></input>
+      <button onclick="goToUrl()">Go!</button>
+    </div>
+    <footer>
+      <a href="https://twitter.com/alperql" target="_blank">@alperql</a> | <a href="https://github.com/alperklc/your-own-personal-proxy" target="_blank">see the project on github</a>
+    </footer>
+  </div>
+
+  <script type="text/javascript">
+    const onKeydown = (e) => {
+      if (e.keyCode === 13) {
+        goToUrl()
+      }
+    }
+
+    const goToUrl = () => {
+      const url = document.getElementById('url').value
+      window.location.href = `${window.location.origin}/?url=${url}`
+    }
+  </script>
+</body>
+</html>
